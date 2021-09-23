@@ -156,13 +156,18 @@ $("#calendar").on("click", ".saveBtn", function() {
     
 })
 
+// Save 'state' object in the 'workDayState' key in localStorage
 var SaveState = function() {
     localStorage.setItem("workDayState",JSON.stringify(state));
 }
 
+// Read in 'workDayState' from localStorage. If empty, create blank
+// otherwise, populate into the corresponding p elements.
 var LoadState = function() {
+    // get state from local Storage
     state = JSON.parse(localStorage.getItem("workDayState"));
-    console.log(state);
+
+    // if it doesn't exist, then create a blank object. Otherwise, load into p elements
     if (!state) {
         state = {};
         for (var i = 9; i <= 17; i++) {
@@ -170,11 +175,22 @@ var LoadState = function() {
             state[i] = item.text();
         }
     } else {
-        $("#row-" + String(i)).find("p").val(state[i]);
+        for (var i = 9; i <= 17; i++) {
+            $("#row-" + String(i)).find("p").text(state[i]);
+        }
     }
 }
 
+// Run the initial load of the page
 DisplayNow();
-LoadState();
 CreateTimeRows();
+LoadState();
 UpdateTimeColors();
+
+// Check every minute and update the work schedule accordingly.
+var PeriodicCheck = setInterval(function() {
+    console.log("Checked");
+    DisplayNow();
+    LoadState();
+    UpdateTimeColors();
+},60000)
