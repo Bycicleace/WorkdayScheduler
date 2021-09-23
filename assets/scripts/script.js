@@ -1,3 +1,7 @@
+// Stores last description in p elements
+var previousDescription = "";
+var newDescription = "";
+
 // Get the Current Day and Time and return the moment object for it.
 var GetNow = function() {
     return moment();
@@ -28,7 +32,7 @@ var CreateTimeRows = function() {
 
         // This is the element for the data/possible appointments
         var notes = $("<p>");
-        notes.addClass("col-10 p-0 m-0 description");
+        notes.addClass("col-10 p-2 m-0 description text-black");
 
         // This is for the save button on the end.
         var save = $("<div>");
@@ -66,8 +70,56 @@ var UpdateTimeColors = function() {
     }
 }
 
+// Updates the p element to be a textarea form-input when clicked
+$("#calendar").on("click", "div p", function() {
+    var parentDiv = $("<div>")
+        .addClass("col-10 p-0 m-0 description");
 
-// This is what adds the current day to the page.
+    previousDescription = $(this).text();
+
+    var textInput = $("<textarea>")
+        .addClass("form-control p-2 textarea")
+        .val(previousDescription);   
+
+    // Assign same background color as previous P element
+    if ($(this).hasClass("past")) {
+        textInput.addClass("past");
+    } else if ($(this).hasClass("present")) {
+        textInput.addClass("present");
+    } else if ($(this).hasClass("future")) {
+        textInput.addClass("future");
+    }
+ 
+    parentDiv.append(textInput);
+
+    $(this).replaceWith(parentDiv);
+
+    textInput.trigger("focus");
+});
+
+// When leaving the element, take the text value and reassign it to a p element
+$("#calendar").on("blur", "div div textarea", function() {
+    newDescription = $(this).val();
+    console.log(newDescription);
+
+    var pElement = $("<p>")
+        .addClass("col-10 p-2 m-0 description text-black")
+    
+    if ($(this).hasClass("past")) {
+        pElement.addClass("past");
+    } else if ($(this).hasClass("present")) {
+        pElement.addClass("present");
+    } else if ($(this).hasClass("future")) {
+        pElement.addClass("future");
+    }
+    
+    $(this).closest("div").replaceWith(pElement);
+})
+
+$("#calendar").on("click", ".saveBtn", function() {
+    alert("Save clicked!");
+})
+
 DisplayNow();
 CreateTimeRows();
 UpdateTimeColors();
