@@ -1,6 +1,8 @@
 // Stores last description in p elements
 var previousDescription = "";
 var newDescription = "";
+var currentRow = "";
+var isEditing = false;
 
 // Get the Current Day and Time and return the moment object for it.
 var GetNow = function() {
@@ -50,6 +52,7 @@ var CreateTimeRows = function() {
     
 }
 
+// Goes through each row and updates the background color on the p element based on the time of day.
 var UpdateTimeColors = function() {
     var currentHour = moment().hour();
     for (var i = 9; i <= 17; i++) {
@@ -72,11 +75,20 @@ var UpdateTimeColors = function() {
 
 // Updates the p element to be a textarea form-input when clicked
 $("#calendar").on("click", "div p", function() {
+    // Change global editing flag to true
+    isEditing = true;
+
+    // Saves the id of the current row
+    currentRow = $(this).closest("div").attr('id')
+
+    // Div to hold the form element
     var parentDiv = $("<div>")
         .addClass("col-10 p-0 m-0 description");
 
+    // Set the global variable to what was in this box before editing
     previousDescription = $(this).text();
 
+    // Create a textarea element and fill with previous description
     var textInput = $("<textarea>")
         .addClass("form-control p-2 textarea")
         .val(previousDescription);   
@@ -90,21 +102,30 @@ $("#calendar").on("click", "div p", function() {
         textInput.addClass("future");
     }
  
+    // Add textarea to div
     parentDiv.append(textInput);
 
+    // Replace p element with div element
     $(this).replaceWith(parentDiv);
 
+    // focus on textarea
     textInput.trigger("focus");
 });
 
-// When leaving the element, take the text value and reassign it to a p element
+// When leaving the element, replace it with a p element containing previous description (Save button assigns text)
 $("#calendar").on("blur", "div div textarea", function() {
+    // Set global variable to the value in the textarea
     newDescription = $(this).val();
-    console.log(newDescription);
 
+    // create a new p element to replace the div/textarea. Assign previous description to it.
     var pElement = $("<p>")
         .addClass("col-10 p-2 m-0 description text-black")
+        .text(previousDescription);
     
+    // Clears out the previous description
+    previousDescription = "";
+    
+    // Add the correct background color class
     if ($(this).hasClass("past")) {
         pElement.addClass("past");
     } else if ($(this).hasClass("present")) {
@@ -113,11 +134,21 @@ $("#calendar").on("blur", "div div textarea", function() {
         pElement.addClass("future");
     }
     
+    // Find the parent div and replace with p element
     $(this).closest("div").replaceWith(pElement);
 })
 
 $("#calendar").on("click", ".saveBtn", function() {
-    alert("Save clicked!");
+    // Get the newDescription value and put it in the p element, then resets newDescription
+    // Only works if the user edited the row's p element, and clicked on that same row's save button
+    // Will store new value until the correct save button is pressed.
+    if (isEditing && currentRow === $(this).parent().attr('id')) {
+        var pElement = $(this).parent().find("p")
+        pElement.text(newDescription);
+        newDescription = "";
+        isEditing = false;
+    }
+    
 })
 
 DisplayNow();
