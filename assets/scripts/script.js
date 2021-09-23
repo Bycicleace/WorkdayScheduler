@@ -1,8 +1,9 @@
-// Stores last description in p elements
 var previousDescription = "";
 var newDescription = "";
 var currentRow = "";
 var isEditing = false;
+var state = {};
+
 
 // Get the Current Day and Time and return the moment object for it.
 var GetNow = function() {
@@ -35,6 +36,7 @@ var CreateTimeRows = function() {
         // This is the element for the data/possible appointments
         var notes = $("<p>");
         notes.addClass("col-10 p-2 m-0 description text-black");
+        notes.val(state[i]);
 
         // This is for the save button on the end.
         var save = $("<div>");
@@ -138,6 +140,7 @@ $("#calendar").on("blur", "div div textarea", function() {
     $(this).closest("div").replaceWith(pElement);
 })
 
+// When the save button is clicked after the textarea on the same row has been edited, update the textarea element
 $("#calendar").on("click", ".saveBtn", function() {
     // Get the newDescription value and put it in the p element, then resets newDescription
     // Only works if the user edited the row's p element, and clicked on that same row's save button
@@ -145,12 +148,33 @@ $("#calendar").on("click", ".saveBtn", function() {
     if (isEditing && currentRow === $(this).parent().attr('id')) {
         var pElement = $(this).parent().find("p")
         pElement.text(newDescription);
+        state[parseInt(currentRow.replace("row-",""))] = newDescription;
         newDescription = "";
         isEditing = false;
+        SaveState();
     }
     
 })
 
+var SaveState = function() {
+    localStorage.setItem("workDayState",JSON.stringify(state));
+}
+
+var LoadState = function() {
+    state = JSON.parse(localStorage.getItem("workDayState"));
+    console.log(state);
+    if (!state) {
+        state = {};
+        for (var i = 9; i <= 17; i++) {
+            var item = $("#row-" + String(i)).find("p");
+            state[i] = item.text();
+        }
+    } else {
+        $("#row-" + String(i)).find("p").val(state[i]);
+    }
+}
+
 DisplayNow();
+LoadState();
 CreateTimeRows();
 UpdateTimeColors();
